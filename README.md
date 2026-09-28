@@ -47,3 +47,21 @@ When running in containers or cloud platforms, use the platform's secret managem
 ```bash
 dotnet user-secrets set "JwtSettings:SecretKey" "a_very_secure_key"
 ```
+
+## 🗄️ Database (SQLite) — Local Development
+
+This project uses a connection string named "DefaultConnection" from configuration. For local development with SQLite, set the DefaultConnection via user-secrets before starting the app. Example:
+
+```bash
+# Store SQLite file path in the ConnectionStrings:DefaultConnection key
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Data Source=app.db"
+```
+
+After changing user-secrets, restart the running dotnet process so the new connection string (and other secrets) are loaded. If migrations haven't been applied yet, run:
+
+```bash
+# apply EF Core migrations to create the SQLite database file
+dotnet ef database update
+```
+
+Note: If you prefer a different database (Postgres, SQL Server), set the appropriate connection string and provider in the project.
