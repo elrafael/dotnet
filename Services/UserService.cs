@@ -29,16 +29,16 @@ public class UserService : IUserService
 
     public async Task<UserResponseDto?> GetByIdAsync(int id)
     {
-        var user = await _context.Users.FindAsync(id);
-        if (user == null) return null;
-
-        return new UserResponseDto
-        {
-            Id = user.Id,
-            Name = user.Name,
-            Email = user.Email,
-            CreatedAt = user.CreatedAt
-        };
+        return await _context.Users
+            .Where(u => u.Id == id)
+            .Select(u => new UserResponseDto
+            {
+                Id = u.Id,
+                Name = u.Name,
+                Email = u.Email,
+                CreatedAt = u.CreatedAt
+            })
+            .FirstOrDefaultAsync();
     }
 
     public async Task<UserResponseDto?> CreateAsync(CreateUserDto dto)
@@ -72,7 +72,10 @@ public class UserService : IUserService
         if (user == null) return false;
 
         user.Name = dto.Name;
-        user.Email = dto.Email;
+        if (!string.IsNullOrEmpty(dto.Email))
+        {
+            user.Email = dto.Email;
+        }
 
         await _context.SaveChangesAsync();
         return true;
@@ -80,11 +83,10 @@ public class UserService : IUserService
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var user = await _context.Users.FindAsync(id);
-        if (user == null) return false;
-
-        _context.Users.Remove(user);
-        await _context.SaveChangesAsync();
-        return true;
+        var rowsAffected = await _context.Users
+            .Where(u => u.Id == id)
+            .ExecuteDeleteAsync();
+        
+        return rowsAffected > 0;
     }
 }
